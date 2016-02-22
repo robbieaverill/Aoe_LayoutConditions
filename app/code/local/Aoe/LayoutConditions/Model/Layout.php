@@ -1,67 +1,76 @@
 <?php
+/**
+ * Extend the core layout model to add the ifs and unless etc
+ *
+ * @category Mage
+ * @package  Aoe_LayoutConditions
+ */
+class Aoe_LayoutConditions_Model_Layout extends Mage_Core_Model_Layout
+{
+    /**
+     * Create layout blocks hierarchy from layout XML configuration
+     *
+     * @param Mage_Core_Layout_Element|null $parent
+     * @return void
+     */
+    public function generateBlocks($parent = null)
+    {
+        if (empty($parent)) {
+            $parent = $this->getNode();
+        }
 
-class Aoe_LayoutConditions_Model_Layout extends Mage_Core_Model_Layout {
+        if (isset($parent['ifconfig']) && ($configPath = (string) $parent['ifconfig'])) {
+            if (!Mage::getStoreConfigFlag($configPath)) {
+                return;
+            }
+        }
 
-	/**
-	 * Create layout blocks hierarchy from layout xml configuration
-	 *
-	 * @param Mage_Core_Layout_Element|null $parent
-	 */
-	public function generateBlocks($parent=null) {
+        if (isset($parent['unlessconfig']) && ($configPath = (string) $parent['unlessconfig'])) {
+            if (Mage::getStoreConfigFlag($configPath)) {
+                return;
+            }
+        }
 
-		if (empty($parent)) {
-			$parent = $this->getNode();
-		}
+        parent::generateBlocks($parent);
+    }
 
-		if (isset($parent['ifconfig']) && ($configPath = (string)$parent['ifconfig'])) {
-			if (!Mage::getStoreConfigFlag($configPath)) {
-				return;
-			}
-		}
-		if (isset($parent['unlessconfig']) && ($configPath = (string)$parent['unlessconfig'])) {
-			if (Mage::getStoreConfigFlag($configPath)) {
-				return;
-			}
-		}
-		parent::generateBlocks($parent);
-	}
+    /**
+     * Add block object to layout based on XML node data
+     *
+     * @param  Varien_Simplexml_Element $node
+     * @param  Varien_Simplexml_Element $parent
+     * @return self
+     */
+    protected function _generateBlock($node, $parent)
+    {
+        if (isset($node['ifconfig']) && ($configPath = (string) $node['ifconfig'])) {
+            if (!Mage::getStoreConfigFlag($configPath)) {
+                return;
+            }
+        }
 
-	/**
-	 * Add block object to layout based on xml node data
-	 *
-	 * @param Varien_Simplexml_Element $node
-	 * @param Varien_Simplexml_Element $parent
-	 * @return Mage_Core_Model_Layout
-	 */
-	protected function _generateBlock($node, $parent) {
-		if (isset($node['ifconfig']) && ($configPath = (string)$node['ifconfig'])) {
-			if (!Mage::getStoreConfigFlag($configPath)) {
-				return;
-			}
-		}
-		if (isset($node['unlessconfig']) && ($configPath = (string)$node['unlessconfig'])) {
-			if (Mage::getStoreConfigFlag($configPath)) {
-				return;
-			}
-		}
-		return parent::_generateBlock($node, $parent);
-	}
+        if (isset($node['unlessconfig']) && ($configPath = (string) $node['unlessconfig'])) {
+            if (Mage::getStoreConfigFlag($configPath)) {
+                return;
+            }
+        }
+        return parent::_generateBlock($node, $parent);
+    }
 
-	/**
-	 * Enter description here...
-	 *
-	 * @param Varien_Simplexml_Element $node
-	 * @param Varien_Simplexml_Element $parent
-	 * @return Mage_Core_Model_Layout
-	 */
-	protected function _generateAction($node, $parent) {
-		if (isset($node['unlessconfig']) && ($configPath = (string)$node['unlessconfig'])) {
-			if (Mage::getStoreConfigFlag($configPath)) {
-				return $this;
-			}
-		}
-		return parent::_generateAction($node, $parent);
-	}
-
-
+    /**
+     * Skip the generation if config is set for node
+     *
+     * @param  Varien_Simplexml_Element $node
+     * @param  Varien_Simplexml_Element $parent
+     * @return self
+     */
+    protected function _generateAction($node, $parent)
+    {
+        if (isset($node['unlessconfig']) && ($configPath = (string) $node['unlessconfig'])) {
+            if (Mage::getStoreConfigFlag($configPath)) {
+                return $this;
+            }
+        }
+        return parent::_generateAction($node, $parent);
+    }
 }
